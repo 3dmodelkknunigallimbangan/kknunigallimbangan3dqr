@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KKN TREE SCANNER — QR Generator</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Rajdhani", sans-serif;
+        background: #050a0f;
+        color: #e0e0e0;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 100;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(0, 0, 0, 0.04) 3px,
+          rgba(0, 0, 0, 0.04) 4px
+        );
+      }
+      .bgr {
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(0, 255, 200, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 255, 200, 0.025) 1px, transparent 1px);
+        background-size: 40px 40px;
+        z-index: 0;
+      }
+      .cnt {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Hero */
+      .hero {
+        text-align: center;
+        padding: 45px 20px 25px;
+        position: relative;
+      }
+      .hero::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          ellipse at center,
+          rgba(0, 255, 200, 0.04) 0%,
+          transparent 50%
+        );
+        animation: gl 4s ease-in-out infinite;
+      }
+      @keyframes gl {
+        0%,
+        100% {
+          opacity: 0.5;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      .hero h1 {
+        font-family: "Orbitron", monospace;
+        font-size: clamp(1.3rem, 4.5vw, 2.5rem);
+        font-weight: 900;
+        color: #00ffc8;
+        text-shadow: 0 0 25px rgba(0, 255, 200, 0.35);
+        letter-spacing: 5px;
+        position: relative;
+      }
+      .hero .tag {
+        font-family: "Orbitron", monospace;
+        font-size: 0.65rem;
+        color: #444;
+        letter-spacing: 3px;
+        margin-top: 6px;
+        text-transform: uppercase;
+        position: relative;
+      }
+      .hero .bdg {
+        display: inline-block;
+        margin-top: 12px;
+        background: rgba(0, 255, 200, 0.06);
+        border: 1px solid rgba(0, 255, 200, 0.2);
+        padding: 7px 18px;
+        border-radius: 4px;
+        font-family: "Orbitron", monospace;
+        font-size: 0.6rem;
+        color: #00ffc8;
+        letter-spacing: 2px;
+        position: relative;
+      }
+
+      /* Steps */
+      .steps {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin: 20px auto;
+        max-width: 600px;
+        padding: 0 20px;
+      }
+      .stp {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(0, 255, 200, 0.08);
+        padding: 12px;
+        text-align: center;
+        flex: 1;
+        border-radius: 4px;
+      }
+      .stp .n {
+        font-family: "Orbitron", monospace;
+        font-size: 1rem;
+        font-weight: 900;
+        color: #00ffc8;
+        text-shadow: 0 0 8px rgba(0, 255, 200, 0.3);
+      }
+      .stp p {
+        font-size: 0.75rem;
+        margin-top: 4px;
+        color: #666;
+      }
+
+      /* URL input */
+      .urlc {
+        max-width: 700px;
+        margin: 15px auto;
+        padding: 0 20px;
+      }
+      .urlb {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(0, 255, 200, 0.12);
+        padding: 10px 15px;
+        border-radius: 4px;
+      }
+      .urlb label {
+        font-family: "Orbitron", monospace;
+        font-size: 0.55rem;
+        color: #00ffc8;
+        letter-spacing: 1px;
+        white-space: nowrap;
+      }
+      .urlb input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #aaa;
+        font-family: "Rajdhani", monospace;
+        font-size: 0.85rem;
+      }
+      .urlb button {
+        background: rgba(0, 255, 200, 0.12);
+        border: 1px solid rgba(0, 255, 200, 0.35);
+        color: #00ffc8;
+        padding: 7px 15px;
+        font-family: "Orbitron", monospace;
+        font-size: 0.55rem;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border-radius: 3px;
+      }
+      .urlb button:hover {
+        background: rgba(0, 255, 200, 0.22);
+      }
+
+      /* Logo upload */
+      .logo-section {
+        max-width: 700px;
+        margin: 10px auto;
+        padding: 0 20px;
+      }
+      .logo-box {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(0, 255, 200, 0.08);
+        padding: 10px 15px;
+        border-radius: 4px;
+      }
+      .logo-box label {
+        font-family: "Orbitron", monospace;
+        font-size: 0.55rem;
+        color: #00ffc8;
+        letter-spacing: 1px;
+        white-space: nowrap;
+      }
+      .logo-box input[type="file"] {
+        flex: 1;
+        font-size: 0.75rem;
+        color: #888;
+      }
+      .logo-box input[type="file"]::file-selector-button {
+        background: rgba(0, 255, 200, 0.1);
+        border: 1px solid rgba(0, 255, 200, 0.3);
+        color: #00ffc8;
+        padding: 5px 12px;
+        border-radius: 3px;
+        font-family: "Orbitron", monospace;
+        font-size: 0.5rem;
+        cursor: pointer;
+        letter-spacing: 0.5px;
+      }
+      .logo-preview {
+        width: 35px;
+        height: 35px;
+        border-radius: 4px;
+        object-fit: contain;
+        border: 1px solid rgba(0, 255, 200, 0.2);
+        display: none;
+      }
+
+      /* Cards */
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 18px;
+        margin: 20px auto;
+        padding: 0 20px 30px;
+        max-width: 1100px;
+      }
+      .card {
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.4s;
+      }
+      .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        border-color: var(--ac, rgba(0, 255, 200, 0.15));
+      }
+      .card-top {
+        padding: 16px 16px 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .card-ico {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .card-top h3 {
+        font-family: "Orbitron", monospace;
+        font-size: 0.7rem;
+        letter-spacing: 1px;
+        color: var(--ac, #00ffc8);
+      }
+      .card-top .lat {
+        font-size: 0.68rem;
+        color: #555;
+        font-style: italic;
+        margin-top: 2px;
+      }
+      .card-body {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 8px 16px 16px;
+      }
+      .qrw {
+        background: #fff;
+        border-radius: 6px;
+        padding: 6px;
+        position: relative;
+        flex-shrink: 0;
+      }
+      .qrw canvas,
+      .qrw img {
+        display: block;
+        border-radius: 2px;
+      }
+      .qrl {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 28px;
+        height: 28px;
+        background: #050a0f;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        overflow: hidden;
+      }
+      .qrl span {
+        font-family: "Orbitron", monospace;
+        font-size: 0.35rem;
+        font-weight: 900;
+        color: #00ffc8;
+      }
+      .qrl img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .cact {
+        flex: 1;
+      }
+      .cact .url {
+        font-size: 0.55rem;
+        color: #3a3a3a;
+        word-break: break-all;
+        margin-bottom: 8px;
+        font-family: monospace;
+      }
+      .btns {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-family: "Orbitron", monospace;
+        font-size: 0.5rem;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        text-decoration: none;
+      }
+      .btn-g {
+        background: rgba(0, 255, 200, 0.12);
+        border: 1px solid rgba(0, 255, 200, 0.25);
+        color: #00ffc8;
+      }
+      .btn-g:hover {
+        background: rgba(0, 255, 200, 0.22);
+      }
+      .btn-w {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #777;
+      }
+      .btn-w:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+      }
+      .foot {
+        text-align: center;
+        padding: 25px 20px;
+        font-family: "Orbitron", monospace;
+        font-size: 0.5rem;
+        color: #222;
+        letter-spacing: 2px;
+      }
+
+      /* Hidden canvas for QR card generation */
+      #dlCanvas {
+        display: none;
+      }
+
+      @media (max-width: 600px) {
+        .cards {
+          grid-template-columns: 1fr;
+        }
+        .card-body {
+          flex-direction: column;
+          text-align: center;
+        }
+        .btns {
+          justify-content: center;
+        }
+        .steps {
+          flex-direction: column;
+          max-width: 250px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bgr"></div>
+    <div class="cnt">
+      <div class="hero">
+        <h1>TREE SCANNER</h1>
+        <p class="tag">KKN Unigall Desa Limbangan 2026 · Augmented Botanical Explorer</p>
+        <span class="bdg">5 SPECIES · 3D · INTERACTIVE</span>
+      </div>
+      <div class="steps">
+        <div class="stp">
+          <div class="n">01</div>
+          <p>Cetak QR</p>
+        </div>
+        <div class="stp">
+          <div class="n">02</div>
+          <p>Tempel di Pohon</p>
+        </div>
+        <div class="stp">
+          <div class="n">03</div>
+          <p>Scan & Explore</p>
+        </div>
+      </div>
+      <div class="urlc">
+        <div class="urlb">
+          <label>BASE URL</label>
+          <input
+            type="text"
+            id="baseUrl"
+            value="https://username.github.io/kkn-pohon/"
+          />
+          <button onclick="render()">UPDATE</button>
+        </div>
+      </div>
+      <div class="logo-section">
+        <div class="logo-box">
+          <label>LOGO KKN</label>
+          <input
+            type="file"
+            id="logoInput"
+            accept="image/*"
+            onchange="loadLogo(this)"
+          />
+          <img id="logoPreview" class="logo-preview" />
+        </div>
+      </div>
+      <div class="cards" id="cards"></div>
+      <div class="foot">KKN Unigal Desa Limbangan 2026 — DIGITAL BOTANICAL CONSERVATION</div>
+    </div>
+    <canvas id="dlCanvas"></canvas>
+    <script>
+      const T = [
+        {
+          id: "aren",
+          name: "Pohon Aren",
+          latin: "Arenga pinnata",
+          emoji: "🌴",
+          ac: "#00ffc8",
+          f: "aren.html",
+        },
+        {
+          id: "mahoni",
+          name: "Pohon Mahoni",
+          latin: "Swietenia mahagoni",
+          emoji: "🌳",
+          ac: "#ff6b35",
+          f: "mahoni.html",
+        },
+        {
+          id: "pace",
+          name: "Pohon Pace",
+          latin: "Morinda citrifolia",
+          emoji: "🍈",
+          ac: "#39ff14",
+          f: "pace.html",
+        },
+        {
+          id: "akasia",
+          name: "Pohon Akasia",
+          latin: "Acacia auriculiformis",
+          emoji: "🌿",
+          ac: "#ffcc00",
+          f: "akasia.html",
+        },
+        {
+          id: "alpukat",
+          name: "Pohon Alpukat",
+          latin: "Persea americana",
+          emoji: "🥑",
+          ac: "#00e5ff",
+          f: "alpukat.html",
+        },
+      ];
+
+      let logoImg = null;
+
+      function loadLogo(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          logoImg = new Image();
+          logoImg.onload = () => {
+            document.getElementById("logoPreview").src = e.target.result;
+            document.getElementById("logoPreview").style.display = "block";
+            render(); // re-render with logo
+          };
+          logoImg.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function base() {
+        return (
+          document.getElementById("baseUrl").value.replace(/\/$/, "") + "/"
+        );
+      }
+
+      function render() {
+        const g = document.getElementById("cards");
+        g.innerHTML = "";
+        T.forEach((t) => {
+          const url = base() + t.f,
+            c = document.createElement("div");
+          c.className = "card";
+          c.style.setProperty("--ac", t.ac);
+          c.innerHTML = `<div class="card-top"><div class="card-ico">${t.emoji}</div><div><h3>${t.name.toUpperCase()}</h3><div class="lat">${t.latin}</div></div></div>
+    <div class="card-body"><div class="qrw"><div id="qr-${t.id}"></div><div class="qrl">${logoImg ? '<img src="' + logoImg.src + '">' : "<span>KKN</span>"}</div></div>
+    <div class="cact"><div class="url">${url}</div><div class="btns">
+    <button class="btn btn-g" onclick="dlCard('${t.id}')">⬇ DOWNLOAD CARD</button>
+    <a class="btn btn-w" href="${t.f}" target="_blank">👁 PREVIEW 3D</a></div></div></div>`;
+          g.appendChild(c);
+          new QRCode(document.getElementById("qr-" + t.id), {
+            text: url,
+            width: 120,
+            height: 120,
+            colorDark: "#0a0a0a",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H,
+          });
+        });
+      }
+
+      // ========= BEAUTIFUL QR CARD DOWNLOAD =========
+      function dlCard(id) {
+        const t = T.find((x) => x.id === id);
+        if (!t) return;
+        const el = document.getElementById("qr-" + id);
+        const qrSrc = el.querySelector("canvas") || el.querySelector("img");
+
+        const W = 800,
+          H = 1050;
+        const cv = document.getElementById("dlCanvas");
+        cv.width = W;
+        cv.height = H;
+        const x = cv.getContext("2d");
+
+        // Parse accent color
+        const acR = parseInt(t.ac.slice(1, 3), 16),
+          acG = parseInt(t.ac.slice(3, 5), 16),
+          acB = parseInt(t.ac.slice(5, 7), 16);
+
+        // Background gradient
+        const bgGrad = x.createLinearGradient(0, 0, 0, H);
+        bgGrad.addColorStop(0, "#080c12");
+        bgGrad.addColorStop(0.5, "#0a0e15");
+        bgGrad.addColorStop(1, "#060a10");
+        x.fillStyle = bgGrad;
+        x.fillRect(0, 0, W, H);
+
+        // Subtle grid pattern
+        x.strokeStyle = "rgba(" + acR + "," + acG + "," + acB + ",0.04)";
+        x.lineWidth = 0.5;
+        for (let i = 0; i < W; i += 30) {
+          x.beginPath();
+          x.moveTo(i, 0);
+          x.lineTo(i, H);
+          x.stroke();
+        }
+        for (let i = 0; i < H; i += 30) {
+          x.beginPath();
+          x.moveTo(0, i);
+          x.lineTo(W, i);
+          x.stroke();
+        }
+
+        // Outer border with accent glow
+        const borderW = 3;
+        x.strokeStyle = t.ac;
+        x.lineWidth = borderW;
+        x.strokeRect(borderW / 2, borderW / 2, W - borderW, H - borderW);
+
+        // Inner border
+        x.strokeStyle = "rgba(" + acR + "," + acG + "," + acB + ",0.15)";
+        x.lineWidth = 1;
+        x.strokeRect(12, 12, W - 24, H - 24);
+
+        // Corner decorations
+        const cs = 35;
+        x.strokeStyle = t.ac;
+        x.lineWidth = 2.5;
+        // Top-left
+        x.beginPath();
+        x.moveTo(20, 20 + cs);
+        x.lineTo(20, 20);
+        x.lineTo(20 + cs, 20);
+        x.stroke();
+        // Top-right
+        x.beginPath();
+        x.moveTo(W - 20 - cs, 20);
+        x.lineTo(W - 20, 20);
+        x.lineTo(W - 20, 20 + cs);
+        x.stroke();
+        // Bottom-left
+        x.beginPath();
+        x.moveTo(20, H - 20 - cs);
+        x.lineTo(20, H - 20);
+        x.lineTo(20 + cs, H - 20);
+        x.stroke();
+        // Bottom-right
+        x.beginPath();
+        x.moveTo(W - 20 - cs, H - 20);
+        x.lineTo(W - 20, H - 20);
+        x.lineTo(W - 20, H - 20 - cs);
+        x.stroke();
+
+        // Top accent line
+        const topLineGrad = x.createLinearGradient(50, 0, W - 50, 0);
+        topLineGrad.addColorStop(0, "transparent");
+        topLineGrad.addColorStop(0.3, t.ac);
+        topLineGrad.addColorStop(0.7, t.ac);
+        topLineGrad.addColorStop(1, "transparent");
+        x.strokeStyle = topLineGrad;
+        x.lineWidth = 1;
+        x.beginPath();
+        x.moveTo(50, 55);
+        x.lineTo(W - 50, 55);
+        x.stroke();
+
+        // Title: "KKN 2025"
+        x.fillStyle = "rgba(" + acR + "," + acG + "," + acB + ",0.6)";
+        x.font = "600 14px Orbitron, monospace";
+        x.textAlign = "center";
+        x.fillText("KKN 2026 · TREE SCANNER", W / 2, 45);
+
+        // Emoji
+        x.font = "72px sans-serif";
+        x.textAlign = "center";
+        x.fillText(t.emoji, W / 2, 140);
+
+        // Tree name
+        x.fillStyle = t.ac;
+        x.font = "900 36px Orbitron, monospace";
+        x.fillText(t.name.toUpperCase(), W / 2, 195);
+
+        // Latin name
+        x.fillStyle = "rgba(255,255,255,0.4)";
+        x.font = "italic 500 18px Rajdhani, sans-serif";
+        x.fillText(t.latin, W / 2, 225);
+
+        // Decorative line below name
+        x.strokeStyle = "rgba(" + acR + "," + acG + "," + acB + ",0.25)";
+        x.lineWidth = 1;
+        x.beginPath();
+        x.moveTo(W / 2 - 80, 245);
+        x.lineTo(W / 2 + 80, 245);
+        x.stroke();
+        // Center diamond
+        x.fillStyle = t.ac;
+        x.save();
+        x.translate(W / 2, 245);
+        x.rotate(Math.PI / 4);
+        x.fillRect(-4, -4, 8, 8);
+        x.restore();
+
+        // QR Code section
+        const qrSize = 350;
+        const qrX = (W - qrSize) / 2;
+        const qrY = 275;
+
+        // QR glow background
+        const qrGlow = x.createRadialGradient(
+          W / 2,
+          qrY + qrSize / 2,
+          qrSize / 4,
+          W / 2,
+          qrY + qrSize / 2,
+          qrSize,
+        );
+        qrGlow.addColorStop(
+          0,
+          "rgba(" + acR + "," + acG + "," + acB + ",0.06)",
+        );
+        qrGlow.addColorStop(1, "transparent");
+        x.fillStyle = qrGlow;
+        x.fillRect(qrX - 50, qrY - 30, qrSize + 100, qrSize + 60);
+
+        // QR white background with rounded corners
+        x.fillStyle = "#ffffff";
+        roundRect(x, qrX - 15, qrY - 15, qrSize + 30, qrSize + 30, 16);
+        x.fill();
+
+        // QR border
+        x.strokeStyle = "rgba(" + acR + "," + acG + "," + acB + ",0.2)";
+        x.lineWidth = 2;
+        roundRect(x, qrX - 15, qrY - 15, qrSize + 30, qrSize + 30, 16);
+        x.stroke();
+
+        // Draw QR code
+        if (qrSrc.tagName === "CANVAS")
+          x.drawImage(qrSrc, qrX, qrY, qrSize, qrSize);
+        else {
+          const tmpImg = new Image();
+          tmpImg.src = qrSrc.src;
+          x.drawImage(tmpImg, qrX, qrY, qrSize, qrSize);
+        }
+
+        // Logo in center of QR
+        const logoSize = 70;
+        const lx = W / 2 - logoSize / 2,
+          ly = qrY + qrSize / 2 - logoSize / 2;
+        // White circle background
+        x.fillStyle = "#ffffff";
+        x.beginPath();
+        x.arc(W / 2, qrY + qrSize / 2, logoSize / 2 + 8, 0, Math.PI * 2);
+        x.fill();
+
+        if (logoImg) {
+          // Draw uploaded logo
+          x.save();
+          x.beginPath();
+          x.arc(W / 2, qrY + qrSize / 2, logoSize / 2 + 2, 0, Math.PI * 2);
+          x.clip();
+          x.drawImage(logoImg, lx - 2, ly - 2, logoSize + 4, logoSize + 4);
+          x.restore();
+          // Circle border
+          x.strokeStyle = t.ac;
+          x.lineWidth = 2;
+          x.beginPath();
+          x.arc(W / 2, qrY + qrSize / 2, logoSize / 2 + 5, 0, Math.PI * 2);
+          x.stroke();
+        } else {
+          // Default KKN text logo
+          x.fillStyle = "#0a0e15";
+          x.beginPath();
+          x.arc(W / 2, qrY + qrSize / 2, logoSize / 2, 0, Math.PI * 2);
+          x.fill();
+          x.strokeStyle = t.ac;
+          x.lineWidth = 2;
+          x.beginPath();
+          x.arc(W / 2, qrY + qrSize / 2, logoSize / 2 + 4, 0, Math.PI * 2);
+          x.stroke();
+          x.fillStyle = t.ac;
+          x.font = "900 22px Orbitron, monospace";
+          x.textAlign = "center";
+          x.textBaseline = "middle";
+          x.fillText("KKN", W / 2, qrY + qrSize / 2 - 6);
+          x.fillStyle = "rgba(255,255,255,0.4)";
+          x.font = "600 12px Orbitron, monospace";
+          x.fillText("2026", W / 2, qrY + qrSize / 2 + 14);
+        }
+
+        // "SCAN ME" text
+        x.fillStyle = "rgba(" + acR + "," + acG + "," + acB + ",0.7)";
+        x.font = "700 16px Orbitron, monospace";
+        x.textAlign = "center";
+        x.textBaseline = "top";
+        x.fillText("— SCAN ME —", W / 2, qrY + qrSize + 30);
+
+        // Bottom info section
+        const infoY = qrY + qrSize + 75;
+
+        // Divider line
+        x.strokeStyle = "rgba(" + acR + "," + acG + "," + acB + ",0.15)";
+        x.lineWidth = 1;
+        x.beginPath();
+        x.moveTo(60, infoY);
+        x.lineTo(W - 60, infoY);
+        x.stroke();
+
+        // Info text
+        x.fillStyle = "rgba(255,255,255,0.35)";
+        x.font = "500 14px Rajdhani, sans-serif";
+        x.textAlign = "center";
+        x.fillText(
+          "Arahkan kamera HP ke QR Code untuk melihat",
+          W / 2,
+          infoY + 25,
+        );
+        x.fillText(
+          "model 3D interaktif dan informasi lengkap pohon ini",
+          W / 2,
+          infoY + 45,
+        );
+
+        // Bottom branding
+        x.fillStyle = "rgba(" + acR + "," + acG + "," + acB + ",0.35)";
+        x.font = "700 11px Orbitron, monospace";
+        x.fillText("PROGRAM PENANAMAN POHON · KKN 2026", W / 2, H - 50);
+
+        // Tech badge
+        x.fillStyle = "rgba(" + acR + "," + acG + "," + acB + ",0.15)";
+        roundRect(x, W / 2 - 60, H - 38, 120, 22, 4);
+        x.fill();
+        x.fillStyle = "rgba(" + acR + "," + acG + "," + acB + ",0.5)";
+        x.font = "600 9px Orbitron, monospace";
+
+        // Download
+        const a = document.createElement("a");
+        a.download = "QR-Card-" + t.name.replace(/\s/g, "-") + ".png";
+        a.href = cv.toDataURL("image/png");
+        a.click();
+      }
+
+      function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+
+      render();
+    </script>
+  </body>
+</html>
